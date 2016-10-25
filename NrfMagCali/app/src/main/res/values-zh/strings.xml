@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MagCali</string>
+    <string name="action_settings">Settings</string>
+    <string name="scanner_title">请选择设备: </string>
+    <string name="scanner_empty">未找到设备</string>
+    <string name="scanner_action_scan">扫描</string>
+    <string name="scanner_action_cancel">停止</string>
+    <string name="connect_status">设备状态: </string>
+    <string name="mag_data">地磁: </string>
+    <string name="mag_offset">地磁偏移: </string>
+    <string name="connected">已连接</string>
+    <string name="disconnected">未连接</string>
+    <string name="north">北</string>
+    <string name="select_device">选择设备</string>
+    <string name="cali_finish">校准完成</string>
+    <string name="note">1.让设备尽量靠近手机\n2.点击\"选择设备\"按钮选择设备\n3.设备连接成功后指示灯会常亮\n4.让设备画8字,至少画6次\n5.让设备灯朝上,360度转动设备时,指南针跟着转动,表明校准成功,点击\"校准完成\"\n\n</string>
+</resources>

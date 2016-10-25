@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MagCali</string>
+    <string name="action_settings">Settings</string>
+    <string name="scanner_title">Select device: </string>
+    <string name="scanner_empty">No device found</string>
+    <string name="scanner_action_scan">Scan</string>
+    <string name="scanner_action_cancel">Stop</string>
+    <string name="connect_status">Status:</string>
+    <string name="mag_data">MagData: </string>
+    <string name="mag_offset">MagOffset: </string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="north">North</string>
+    <string name="select_device">Devices</string>
+    <string name="cali_finish">CaliFinish</string>
+    <string name="note">1.Make sure the device close to the phone\n2.Click Devices button to select device\n3.Led will turned on when connected\n4.Wave device in a figure eight six times\n5.Make the led at the top side,and rotate the device 360 degree,if the arrow will followed rotate,calibrate ok,click CaliFinish button to finish the calibrate</string>
+</resources>
