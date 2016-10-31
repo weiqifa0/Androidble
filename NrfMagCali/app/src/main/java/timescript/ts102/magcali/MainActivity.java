@@ -70,8 +70,8 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     } else {
                         statusView.setTextColor(Color.RED);
                         statusView.setText(R.string.disconnected);
-                        magDataView.setText("");
-                        magOffsetView.setText("");
+                        //magDataView.setText("");
+                        //magOffsetView.setText("");
                     }
                     okButton.setEnabled(false);
                     Message newMsg = new Message();
@@ -95,8 +95,8 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     offsetCali[2] = (magData[7]-magData[8])/2;
                     //Log.d("jimmy", String.format("%.2f", Math.sqrt(magData[0] * magData[0] + magData[1] * magData[1] + magData[2] * magData[2])) + ";" +
                     //        (magData[3]-magData[4])/2 + "," + (magData[5]-magData[6])/2 + ";" + (magData[7]-magData[8])/2);
-                    magDataView.setText(String.format("%.2f", Math.sqrt(magData[0] * magData[0] + magData[1] * magData[1] + magData[2] * magData[2])));
-                    magOffsetView.setText(offsetCali[0] + ", " + offsetCali[1] + ", " + offsetCali[2]);
+                    //magDataView.setText(String.format("%.2f", Math.sqrt(magData[0] * magData[0] + magData[1] * magData[1] + magData[2] * magData[2])));
+                    //magOffsetView.setText(offsetCali[0] + ", " + offsetCali[1] + ", " + offsetCali[2]);
                     //Log.d(TAG, offsetCali[0] + ", " + offsetCali[1] + ", " + offsetCali[2]);
 
                     if(offsetCali[0]>22 && offsetCali[0]<45 &&
@@ -132,7 +132,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                             Animation.RELATIVE_TO_SELF, 0.5f);
                     ra.setDuration(50);
                     ra.setFillAfter(true);
-                    imageView.startAnimation(ra);
+                    //imageView.startAnimation(ra);
                     currentDegree = degree;
                     break;
 
@@ -168,7 +168,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         context = this;
         statusView = (TextView) findViewById(R.id.status);
-        imageView = (ImageView) findViewById(R.id.image_view);
+        //imageView = (ImageView) findViewById(R.id.image_view);
         devButton = (Button) findViewById(R.id.device);
         devButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,8 +193,8 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
             }
         });
         okButton.setEnabled(false);
-        magDataView = (TextView) findViewById(R.id.mag_data);
-        magOffsetView = (TextView) findViewById(R.id.mag_offset);
+        //magDataView = (TextView) findViewById(R.id.mag_data);
+        //magOffsetView = (TextView) findViewById(R.id.mag_offset);
 
 
         dataProcess = new DataProcess() {

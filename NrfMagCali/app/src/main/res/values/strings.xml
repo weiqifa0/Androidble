@@ -13,5 +13,12 @@
     <string name="north">North</string>
     <string name="select_device">Devices</string>
     <string name="cali_finish">CaliFinish</string>
+    <string name="vib_add">+</string>
+    <string name="vib_left">L</string>
+    <string name="vib_right">R</string>
+    <string name="vib_reduce">-</string>
+    <string name="vib_mode_dis">mode-</string>
+    <string name="vib_mode_add">mode+</string>
+    <string name="vib_audo">VIB</string>
     <string name="note">1.Make sure the device close to the phone\n2.Click Devices button to select device\n3.Led will turned on when connected\n4.Wave device in a figure eight six times\n5.Make the led at the top side,and rotate the device 360 degree,if the arrow will followed rotate,calibrate ok,click CaliFinish button to finish the calibrate</string>
 </resources>
