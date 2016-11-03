@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "23.0.1"
+        buildToolsVersion "24.0.2"
 
     defaultConfig {
-        applicationId "timescript.ts102.magcali"
+        applicationId "jimmy.mimi.ble"
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 1

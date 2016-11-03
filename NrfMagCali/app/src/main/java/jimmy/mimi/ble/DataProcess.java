@@ -1,4 +1,4 @@
-package timescript.ts102.magcali;
+package jimmy.mimi.ble;
 
 import com.androidplot.xy.XYPlot;
 

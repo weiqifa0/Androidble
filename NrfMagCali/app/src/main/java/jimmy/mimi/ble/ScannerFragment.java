@@ -19,7 +19,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package timescript.ts102.magcali;
+package jimmy.mimi.ble;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -300,10 +299,10 @@ public class ScannerFragment extends DialogFragment {
         public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
             String tmp = device.getName();
             if(tmp!=null) {
-                if ((scanRecord[28]&0xFF)==0xFF && (scanRecord[27]&0xFF)==0xA0) {
+                //if ((scanRecord[28]&0xFF)==0xFF && (scanRecord[27]&0xFF)==0xA0) {
                     Log.d("jimmy", "get one");
                     //do not show the far devices
-                    if(rssi > -55) {
+                    //if(rssi > -55) {
                         Message msg = new Message();
                         msg.what = MSG_FOUND_DEVICE;
                         msg.arg1 = rssi;
@@ -319,10 +318,10 @@ public class ScannerFragment extends DialogFragment {
                         */
 
                         if (mIsScanning) {
-                            stopScan();
+                            //stopScan();
                         }
-                    }
-                }
+                    //}
+                //}
             }
         }
 

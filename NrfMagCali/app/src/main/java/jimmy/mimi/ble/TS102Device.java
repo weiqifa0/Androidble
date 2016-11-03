@@ -1,4 +1,4 @@
-package timescript.ts102.magcali;
+package jimmy.mimi.ble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -32,6 +32,11 @@ public abstract class TS102Device{
     private BluetoothGattCharacteristic mSensorCharBrush;
     private BluetoothGattCharacteristic mUartTxChar;
     private BluetoothGattCharacteristic mUartRxChar;
+
+    private BluetoothGattService mMimiService;
+    private static final int[] mVibModes = new int[] { 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6};
+    public static final int START_CMD = 0xDD;
+    public static final int STOP_CMD = 0xA7;
     private boolean connected = false;
 
     private volatile boolean mBusy = false;
@@ -43,6 +48,9 @@ public abstract class TS102Device{
     public static final UUID TIME_UUID = UUID.fromString("0000ffa4-0000-1000-8000-00805f9b34fb");
     public static final UUID SENSOR_Z_UUID = UUID.fromString("0000ffa5-0000-1000-8000-00805f9b34fb");
     public static final UUID SENSOR_BRUSH_UUID = UUID.fromString("0000ffa6-0000-1000-8000-00805f9b34fb");
+
+    public static final UUID MIMI_SERVICE_UUID = UUID.fromString("dddd0001-dddd-dddd-dddd-dddddddddddd");
+    public static final UUID MIMI_TX_UUID = UUID.fromString("dddd0002-dddd-dddd-dddd-dddddddddddd");
 
     public static final int DATA_TYPE_EULAR = 0x01;
     public static final int DATA_TYPE_Y = 0x02;
@@ -74,6 +82,53 @@ public abstract class TS102Device{
             return;
         }
         mBluetoothAdapter.startLeScan(mLeScanCallback);
+    }
+
+    public void startVib(int mode)
+    {
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) START_CMD;
+        bytes[1] = (byte) mVibModes[mode];
+        mimiTxSend(bytes);
+    }
+
+    public void stopVib()
+    {
+        byte[] bytes = new byte[1];
+        bytes[0] = (byte) STOP_CMD;
+        mimiTxSend(bytes);
+    }
+
+    public void setLeftVib()
+    {
+        byte[] bytes = new byte[5];
+        bytes[0] = 0x01;
+        bytes[1] = 0x01;
+        mimiTxSend(bytes);
+    }
+
+    public void setRightVib()
+    {
+        byte[] bytes = new byte[5];
+        bytes[0] = 0x01;
+        bytes[1] = 0x02;
+        mimiTxSend(bytes);
+    }
+
+    public void mimiTxSend(byte[] bytes) {
+        Log.d(TAG, "mimiTxSend");
+        if(!connected) {
+            return;
+        }
+
+        waitIdle();
+        mBusy = true;
+        mUartTxChar.setValue(bytes);
+        mBluetoothGatt.writeCharacteristic(mUartTxChar);
+    }
+
+    public void readBattery() {
+
     }
 
     public void enableMagCali(boolean enable) {
@@ -226,6 +281,7 @@ public abstract class TS102Device{
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
             if (BluetoothGatt.GATT_SUCCESS == status) {
+                /*
                 mSensorService = gatt.getService(SENSOR_SERVICE_UUID);
                 mEularCharx = mSensorService.getCharacteristic(EULAR_UUID);
                 mTimeChar = mSensorService.getCharacteristic(TIME_UUID);
@@ -233,6 +289,9 @@ public abstract class TS102Device{
                 mSensorCharBrush = mSensorService.getCharacteristic(SENSOR_BRUSH_UUID);
                 mUartTxChar = mSensorService.getCharacteristic(UART_TX_UUID);
                 mUartRxChar = mSensorService.getCharacteristic(UART_RX_UUID);
+                */
+                mMimiService = gatt.getService(MIMI_SERVICE_UUID);
+                mUartTxChar = mMimiService.getCharacteristic(MIMI_TX_UUID);
                 mBusy = false;
             }
         }

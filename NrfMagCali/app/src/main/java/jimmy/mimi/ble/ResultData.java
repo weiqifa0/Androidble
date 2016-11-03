@@ -1,4 +1,4 @@
-package timescript.ts102.magcali;
+package jimmy.mimi.ble;
 
 /**
  * Created by jimmy on 3/21/16.

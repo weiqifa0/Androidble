@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MagCali</string>
+    <string name="app_name">Mimi</string>
     <string name="action_settings">Settings</string>
     <string name="scanner_title">Select device: </string>
     <string name="scanner_empty">No device found</string>
