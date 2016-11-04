@@ -23,7 +23,7 @@ import jimmy.mimi.ui.CircleMenuLayout.OnMenuItemClickListener;
 
 
 public class MainActivity extends FragmentActivity implements ScannerFragment.OnDeviceSelectedListener{
-    private String TAG = "MagCali";
+    private String TAG = "Mimi";
     private BluetoothAdapter mBluetoothAdapter;
     private DataProcess dataProcess;
     private TS102Device tsDevice;
@@ -37,7 +37,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private CircleMenuLayout mCircleMenuLayout;
     private boolean vibStarted = false;
 
-    private int selectedPos;
+    private int selectedPos = 0;
     private String[] mItemTexts = new String[] { "自动", "揉", "推", "压", "拍", "锤"};
     private int[] mItemImgs2;
 
@@ -47,7 +47,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private final int VIB_START_MSG = 0x01;
     private final int VIB_STOP_MSG = 0x02;
     private final int VIB_READ_BAT_MSG = 0x03;
-    private final int IMAGE_ROTATE_MSG = 0x04;
+    private final int VIB_BAT_UPDATE_MSG = 0x04;
     private final int MAG_DATA_MSG = 0x05;
     private Handler mHandler = new Handler() {
         @Override
@@ -66,12 +66,17 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     mHandler.sendMessageDelayed(newMsg, 300);
                     break;
                 case VIB_READ_BAT_MSG:
-                    tsDevice.readBattery();
+                    tsDevice.enableBatteryNotify(true);
+                    break;
+                case VIB_BAT_UPDATE_MSG:
+                    baterryText.setText((Byte) msg.obj+"%");
+                    break;
                 case VIB_START_MSG:
                     tsDevice.startVib(selectedPos);
                     break;
                 case VIB_STOP_MSG:
                     tsDevice.stopVib();
+                    break;
             }
         }
     };
@@ -107,6 +112,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         context = this;
         statusImage = (ImageView) findViewById(R.id.status);
+        statusImage.setImageResource(R.drawable.connect_fail);
         statusImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,11 +136,24 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
             @Override
             public void itemCenterClick(View view)
             {
+                if(!tsDevice.isConnected()) {
+                    final ScannerFragment dialog = ScannerFragment.getInstance(context, null); // Device that is advertising directly does not have the GENERAL_DISCOVERABLE nor LIMITED_DISCOVERABLE flag set.
+                    if(dialog.getDialog() == null){
+                        Log.d(TAG, "getDialog is null");
+                    }else if(dialog.getDialog().getWindow() == null) {
+                        Log.d(TAG, "getWindow is null");
+                    }
+                    dialog.show(getSupportFragmentManager(), "scan_fragment");
+                    return;
+                }
+                Log.d(TAG, "itemCenterClick");
                 Message msg = new Message();
                 if(vibStarted) {
+                    Log.d(TAG, "stop vib");
                     ((ImageView)view.findViewById(R.id.id_center_image)).setImageResource(R.drawable.start);
                     msg.what = VIB_STOP_MSG;
                 } else {
+                    Log.d(TAG, "start vib");
                     ((ImageView)view.findViewById(R.id.id_center_image)).setImageResource(R.drawable.pause);
                     msg.what = VIB_START_MSG;
                 }
@@ -174,20 +193,18 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
         tsDevice = new TS102Device(this, mBluetoothAdapter) {
             @Override
             public void onDataRecived(int type, byte[] data) {
-                /*
-                if(type == TS102Device.DATA_TYPE_EULAR) {
-                    String str = "R:" + String.format("%-5d", (data[1]<<8 | 0xff&data[0])) + "P:" + String.format("%-5d", (data[3]<<8 | 0xff&data[2]))
-                            + "Y:" + String.format("%-5d", (data[5]<<8 | 0xff&data[4]));
 
-                    eularData[0] = data[1]<<8 | 0xff & data[0];
-                    eularData[1] = data[3]<<8 | 0xff & data[2];
-                    eularData[2] = data[5]<<8 | 0xff & data[4];
-                    Message msg = new Message();
-                    msg.what = VALUES_UPDATE_MSG;
-                    msg.obj = eularData;
-                    mHandler.sendMessage(msg);
+                if(type == TS102Device.DATA_TYPE_BATTERY) {
+                    //String str = "R:" + String.format("%-5d", (data[1]<<8 | 0xff&data[0])) + "P:" + String.format("%-5d", (data[3]<<8 | 0xff&data[2]))
+                    //        + "Y:" + String.format("%-5d", (data[5]<<8 | 0xff&data[4]));
+                    if(data[1] > 0) {
+                        Message msg = new Message();
+                        msg.what = VIB_BAT_UPDATE_MSG;
+                        msg.obj = data[1];
+                        mHandler.sendMessage(msg);
+                    }
                 }
-                */
+
             }
 
             @Override

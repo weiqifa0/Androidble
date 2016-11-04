@@ -17,9 +17,7 @@ import java.util.UUID;
  * Created by jimmy on 3/15/16.
  */
 public abstract class TS102Device{
-    private String TAG = "TS102Device";
-    public String DEVICE_NAME = "ts-102";
-    public String DEVICE_NAME2 = "Nordic_TS102";
+    private String TAG = "Mimi";
     private Context context;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothDevice mDevice;
@@ -35,8 +33,10 @@ public abstract class TS102Device{
 
     private BluetoothGattService mMimiService;
     private static final int[] mVibModes = new int[] { 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6};
-    public static final int START_CMD = 0xDD;
-    public static final int STOP_CMD = 0xA7;
+    public static final int S_BEGAN_CMD = 0xDD;
+    public static final int S_VIB_START_CMD = 0xA0;
+    public static final int S_VIB_STOP_CMD = 0xA7;
+    public static final int R_BATTERY_CMD = 0xDC;
     private boolean connected = false;
 
     private volatile boolean mBusy = false;
@@ -51,12 +51,10 @@ public abstract class TS102Device{
 
     public static final UUID MIMI_SERVICE_UUID = UUID.fromString("dddd0001-dddd-dddd-dddd-dddddddddddd");
     public static final UUID MIMI_TX_UUID = UUID.fromString("dddd0002-dddd-dddd-dddd-dddddddddddd");
+    public static final UUID MIMI_RX_UUID = UUID.fromString("dddd0003-dddd-dddd-dddd-dddddddddddd");
 
-    public static final int DATA_TYPE_EULAR = 0x01;
-    public static final int DATA_TYPE_Y = 0x02;
-    public static final int DATA_TYPE_Z = 0x03;
-    public static final int DATA_TYPE_BRUSH = 0x04;
-    public static final int DATA_UART_RX = 0x05;
+    public static final int DATA_UART_RX = 0x01;
+    public static final int DATA_TYPE_BATTERY = 0x02;
 
     public static boolean readRunning = false;
     private int count = 0;
@@ -86,16 +84,18 @@ public abstract class TS102Device{
 
     public void startVib(int mode)
     {
-        byte[] bytes = new byte[2];
-        bytes[0] = (byte) START_CMD;
-        bytes[1] = (byte) mVibModes[mode];
+        byte[] bytes = new byte[3];
+        bytes[0] = (byte) S_BEGAN_CMD;
+        bytes[1] = (byte) S_VIB_START_CMD;
+        bytes[2] = (byte) mVibModes[mode];
         mimiTxSend(bytes);
     }
 
     public void stopVib()
     {
-        byte[] bytes = new byte[1];
-        bytes[0] = (byte) STOP_CMD;
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) S_BEGAN_CMD;
+        bytes[1] = (byte) S_VIB_STOP_CMD;
         mimiTxSend(bytes);
     }
 
@@ -127,8 +127,14 @@ public abstract class TS102Device{
         mBluetoothGatt.writeCharacteristic(mUartTxChar);
     }
 
-    public void readBattery() {
-
+    public void enableBatteryNotify(boolean enable) {
+        Log.d(TAG, "enableBatteryNotify");
+        if(!connected) {
+            return;
+        }
+        waitIdle();
+        mBusy = true;
+        setCharacteristicNotification(mUartRxChar, enable);
     }
 
     public void enableMagCali(boolean enable) {
@@ -223,13 +229,11 @@ public abstract class TS102Device{
             String tmp = device.getName();
 
             Log.d(TAG, device.getName());
-            if (DEVICE_NAME.equalsIgnoreCase(device.getName()) || DEVICE_NAME2.equalsIgnoreCase(device.getName())) {
-                Log.d(TAG, "Find the target");
-                mBluetoothAdapter.stopLeScan(this);
-                mDevice = device;
+            Log.d(TAG, "Find the target");
+            mBluetoothAdapter.stopLeScan(this);
+            mDevice = device;
 
-                mBluetoothGatt = mDevice.connectGatt(context, false, mGattCallBack);
-            }
+            mBluetoothGatt = mDevice.connectGatt(context, false, mGattCallBack);
         }
 
     };
@@ -260,19 +264,13 @@ public abstract class TS102Device{
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             int type = 0;
-            if(characteristic == mEularCharx) {
-                count++;
-                type = DATA_TYPE_EULAR;
-            } else if(characteristic == mTimeChar) {
-                Log.d("jimmy", "timechar notify ...");
-                type = DATA_TYPE_Y;
-            } else if(characteristic == mSensorCharz) {
-                type = DATA_TYPE_Z;
-            } else if(characteristic == mSensorCharBrush) {
-                Log.d("jimmy", "brush data notify ...");
-                type = DATA_TYPE_BRUSH;
-            } else if(characteristic == mUartRxChar) {
-                type = DATA_UART_RX;
+            Log.d(TAG, "onCharacteristicChanged");
+            if(characteristic == mUartRxChar) {
+
+                Log.d(TAG, "rec:" + (characteristic.getValue()[0]&0xFF) + ":" + characteristic.getValue()[1]);
+                if((characteristic.getValue()[0]&0xFF) == R_BATTERY_CMD) {
+                    type = DATA_TYPE_BATTERY;
+                }
             }
             onDataRecived(type, characteristic.getValue());
         }
@@ -292,6 +290,7 @@ public abstract class TS102Device{
                 */
                 mMimiService = gatt.getService(MIMI_SERVICE_UUID);
                 mUartTxChar = mMimiService.getCharacteristic(MIMI_TX_UUID);
+                mUartRxChar = mMimiService.getCharacteristic(MIMI_RX_UUID);
                 mBusy = false;
             }
         }
@@ -306,12 +305,8 @@ public abstract class TS102Device{
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
             int type = 0;
-            if(characteristic == mEularCharx) {
-                type = DATA_TYPE_EULAR;
-            } else if(characteristic == mTimeChar) {
-                type = DATA_TYPE_Y;
-            } else if(characteristic == mSensorCharz) {
-                type = DATA_TYPE_Z;
+            if(characteristic == mUartRxChar) {
+                type = DATA_UART_RX;
             }
             onDataRecived(type, characteristic.getValue());
             mBusy = false;

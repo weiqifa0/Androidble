@@ -5,6 +5,7 @@
     <string name="scanner_empty">No device found</string>
     <string name="scanner_action_scan">Scan</string>
     <string name="scanner_action_cancel">Stop</string>
+    <string name="scanner_close">Close</string>
     <string name="connect_status">Status:</string>
     <string name="mag_data">MagData: </string>
     <string name="mag_offset">MagOffset: </string>

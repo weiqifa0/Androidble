@@ -34,10 +34,13 @@ import android.os.Message;
 import android.os.ParcelUuid;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -117,6 +120,7 @@ public class ScannerFragment extends DialogFragment {
         }
     };
     private Button mScanButton;
+    private Button mCloseButton;
 
     private ParcelUuid mUuid;
 
@@ -227,6 +231,13 @@ public class ScannerFragment extends DialogFragment {
                         startScan();
                     }
                 }
+            }
+        });
+        mCloseButton = (Button) dialogView.findViewById(R.id.action_close);
+        mCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
             }
         });
 
