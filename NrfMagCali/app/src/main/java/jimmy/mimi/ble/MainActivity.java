@@ -32,6 +32,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private boolean alertShowing = false;
 
     private ImageView statusImage;
+    private TextView statusText;
     private ImageView batteryImage;
     private TextView baterryText;
     private CircleMenuLayout mCircleMenuLayout;
@@ -57,8 +58,10 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                 case STATUS_UPDATE_MSG:
                     if(msg.obj.equals("connected")) {
                         statusImage.setImageResource(R.drawable.connect_ok);
+                        statusText.setText(R.string.connected);
                     } else {
                         statusImage.setImageResource(R.drawable.connect_fail);
+                        statusText.setText(R.string.disconnected);
                     }
                     Message newMsg = new Message();
                     newMsg.what = VIB_READ_BAT_MSG;
@@ -112,7 +115,6 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         context = this;
         statusImage = (ImageView) findViewById(R.id.status);
-        statusImage.setImageResource(R.drawable.connect_fail);
         statusImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,6 +122,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                 dialog.show(getSupportFragmentManager(), "scan_fragment");
             }
         });
+        statusText = (TextView) findViewById(R.id.status_text);
 
         batteryImage = (ImageView) findViewById(R.id.battery_image);
         baterryText = (TextView) findViewById(R.id.battery_value);
