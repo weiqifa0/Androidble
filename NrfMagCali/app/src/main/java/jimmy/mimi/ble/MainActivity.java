@@ -16,10 +16,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import jimmy.mimi.ui.CircleMenuLayout;
 import jimmy.mimi.ui.CircleMenuLayout.OnMenuItemClickListener;
+import jimmy.mimi.ui.MySeekBar;
+import jimmy.mimi.ui.ProgressHintDelegate;
 
 
 public class MainActivity extends FragmentActivity implements ScannerFragment.OnDeviceSelectedListener{
@@ -37,6 +40,14 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private TextView baterryText;
     private CircleMenuLayout mCircleMenuLayout;
     private boolean vibStarted = false;
+    private MySeekBar timeSeekBar;
+    private MySeekBar leftStrSeekBar;
+    private MySeekBar rightStrSeekBar;
+    private int vibTime;
+    private final static int DEFAULT_TIME = 1;
+    private final static int DEFAULT_STRENGHT = 80;
+    private int leftVibStrenght = DEFAULT_TIME;
+    private int rightVibStrenght = DEFAULT_STRENGHT;
 
     private int selectedPos = 0;
     private String[] mItemTexts = new String[] { "自动", "揉", "推", "压", "拍", "锤"};
@@ -49,7 +60,9 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private final int VIB_STOP_MSG = 0x02;
     private final int VIB_READ_BAT_MSG = 0x03;
     private final int VIB_BAT_UPDATE_MSG = 0x04;
-    private final int MAG_DATA_MSG = 0x05;
+    private final int VIB_SET_VIB_TIME = 0x05;
+    private final int VIB_SET_LEFT_STRENGTH = 0x06;
+    private final int VIB_SET_RIGHT_STRENGTH = 0x07;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -80,6 +93,16 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                 case VIB_STOP_MSG:
                     tsDevice.stopVib();
                     break;
+                case VIB_SET_VIB_TIME:
+                    tsDevice.setVibTime((int)msg.obj);
+                    break;
+                case VIB_SET_LEFT_STRENGTH:
+                    tsDevice.setLeftStrength((int) msg.obj);
+                    break;
+                case VIB_SET_RIGHT_STRENGTH:
+                    tsDevice.setRightStrength((int) msg.obj);
+                    break;
+
             }
         }
     };
@@ -126,6 +149,79 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
 
         batteryImage = (ImageView) findViewById(R.id.battery_image);
         baterryText = (TextView) findViewById(R.id.battery_value);
+
+        timeSeekBar = (MySeekBar) findViewById(R.id.time_seekbar);
+        timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                vibTime = (progress==100)?99:progress;
+                Message msg = new Message();
+                msg.what = VIB_SET_VIB_TIME;
+                msg.obj = (int) vibTime;
+                mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        timeSeekBar.getHintDelegate().setHintAdapter(new ProgressHintDelegate.SeekBarHintAdapter() {
+                    @Override public String getHint(android.widget.SeekBar seekBar, int progress) {
+                        progress = progress==100?99:progress;
+                        return String.valueOf((int)(progress/20)+1)+"min";
+                    }
+                });
+        timeSeekBar.setProgress(DEFAULT_TIME);
+        leftStrSeekBar = (MySeekBar) findViewById(R.id.l_strength_seekbar);
+        leftStrSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                leftVibStrenght = progress;
+                Message msg = new Message();
+                msg.what = VIB_SET_LEFT_STRENGTH;
+                msg.obj = progress;
+                mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        leftStrSeekBar.setProgress(DEFAULT_STRENGHT);
+        rightStrSeekBar = (MySeekBar) findViewById(R.id.r_strength_seekbar);
+        rightStrSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                rightVibStrenght = progress;
+                Message msg = new Message();
+                msg.what = VIB_SET_RIGHT_STRENGTH;
+                msg.obj = progress;
+                mHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        rightStrSeekBar.setProgress(DEFAULT_STRENGHT);
 
         mCircleMenuLayout.setOnMenuItemClickListener(new OnMenuItemClickListener()
         {
@@ -191,7 +287,9 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
         mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
         //开启蓝牙
-        mBluetoothAdapter.enable();
+        if(mBluetoothAdapter!=null) {
+            mBluetoothAdapter.enable();
+        }
 
         tsDevice = new TS102Device(this, mBluetoothAdapter) {
             @Override
@@ -220,11 +318,6 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     msg.obj = "disconnected";
                 }
                 mHandler.sendMessage(msg);
-            }
-
-            @Override
-            public void onBatteryChanged(int percent) {
-
             }
         };
     }

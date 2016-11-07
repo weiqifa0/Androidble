@@ -37,6 +37,9 @@ public abstract class TS102Device{
     public static final int S_VIB_START_CMD = 0xA0;
     public static final int S_VIB_STOP_CMD = 0xA7;
     public static final int R_BATTERY_CMD = 0xDC;
+    public static final int S_SET_VIB_TIME_CMD = 0xDB;
+    public static final int S_SET_LEFT_STRENGTH_CMD = 0xDA;
+    public static final int S_SET_RIGHT_STRENGTH_CMD = 0xD9;
     private boolean connected = false;
 
     private volatile boolean mBusy = false;
@@ -65,10 +68,6 @@ public abstract class TS102Device{
     public void onConnectChanged(int state) {
     }
 
-    public void onBatteryChanged(int percent) {
-
-    }
-
     public TS102Device(Context mContext, BluetoothAdapter adapter) {
         context = mContext;
         mBluetoothAdapter = adapter;
@@ -82,8 +81,7 @@ public abstract class TS102Device{
         mBluetoothAdapter.startLeScan(mLeScanCallback);
     }
 
-    public void startVib(int mode)
-    {
+    public void startVib(int mode)    {
         byte[] bytes = new byte[3];
         bytes[0] = (byte) S_BEGAN_CMD;
         bytes[1] = (byte) S_VIB_START_CMD;
@@ -91,27 +89,33 @@ public abstract class TS102Device{
         mimiTxSend(bytes);
     }
 
-    public void stopVib()
-    {
+    public void stopVib()    {
         byte[] bytes = new byte[2];
         bytes[0] = (byte) S_BEGAN_CMD;
         bytes[1] = (byte) S_VIB_STOP_CMD;
         mimiTxSend(bytes);
     }
 
-    public void setLeftVib()
-    {
-        byte[] bytes = new byte[5];
-        bytes[0] = 0x01;
-        bytes[1] = 0x01;
+    public void setVibTime(int time) {
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) S_SET_VIB_TIME_CMD;
+        bytes[1] = (byte) time;
         mimiTxSend(bytes);
     }
 
-    public void setRightVib()
+    public void setLeftStrength(int strength)
     {
-        byte[] bytes = new byte[5];
-        bytes[0] = 0x01;
-        bytes[1] = 0x02;
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) S_SET_LEFT_STRENGTH_CMD;
+        bytes[1] = (byte) strength;
+        mimiTxSend(bytes);
+    }
+
+    public void setRightStrength(int strength)
+    {
+        byte[] bytes = new byte[2];
+        bytes[0] = (byte) S_SET_RIGHT_STRENGTH_CMD;
+        bytes[1] = (byte) strength;
         mimiTxSend(bytes);
     }
 
