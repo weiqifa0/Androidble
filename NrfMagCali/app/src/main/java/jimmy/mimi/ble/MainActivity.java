@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +19,9 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import jimmy.mimi.ui.CircleMenuLayout;
 import jimmy.mimi.ui.CircleMenuLayout.OnMenuItemClickListener;
@@ -43,11 +47,13 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private MySeekBar timeSeekBar;
     private MySeekBar leftStrSeekBar;
     private MySeekBar rightStrSeekBar;
-    private int vibTime;
     private final static int DEFAULT_TIME = 1;
     private final static int DEFAULT_STRENGHT = 80;
-    private int leftVibStrenght = DEFAULT_TIME;
+    private int vibTime = DEFAULT_TIME;
+    private int leftVibStrenght = DEFAULT_STRENGHT;
     private int rightVibStrenght = DEFAULT_STRENGHT;
+    private Timer stopTimer = new Timer();
+    private TimerTask timerTask;
 
     private int selectedPos = 0;
     private String[] mItemTexts = new String[] { "自动", "揉", "推", "压", "拍", "锤"};
@@ -63,6 +69,7 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
     private final int VIB_SET_VIB_TIME = 0x05;
     private final int VIB_SET_LEFT_STRENGTH = 0x06;
     private final int VIB_SET_RIGHT_STRENGTH = 0x07;
+    private final int VIB_MODE_CHANGE_MSG = 0x08;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -88,10 +95,30 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     baterryText.setText((Byte) msg.obj+"%");
                     break;
                 case VIB_START_MSG:
+                    Log.d(TAG, "VIB_START_MSG:" + System.currentTimeMillis());
+                    vibStarted = true;
                     tsDevice.startVib(selectedPos);
+                    if(timerTask != null) {
+                        timerTask.cancel();
+                        timerTask = null;
+                    }
+                    timerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            mHandler.sendEmptyMessage(VIB_STOP_MSG);
+                        }
+                    };
+                    stopTimer.schedule(timerTask, vibTime*60*1000);
                     break;
                 case VIB_STOP_MSG:
+                    Log.d(TAG, "VIB_STOP_MSG:" + System.currentTimeMillis());
+                    if(timerTask != null) {
+                        timerTask.cancel();
+                        timerTask = null;
+                    }
                     tsDevice.stopVib();
+                    mCircleMenuLayout.setCenterImage(R.drawable.start);
+                    vibStarted = false;
                     break;
                 case VIB_SET_VIB_TIME:
                     tsDevice.setVibTime((int)msg.obj);
@@ -101,6 +128,12 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     break;
                 case VIB_SET_RIGHT_STRENGTH:
                     tsDevice.setRightStrength((int) msg.obj);
+                    break;
+                case VIB_MODE_CHANGE_MSG:
+                    //if started, resend start command
+                    if(vibStarted) {
+                        tsDevice.startVib(selectedPos);
+                    }
                     break;
 
             }
@@ -230,6 +263,9 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
             {
                 Log.d(TAG, "item pos " + pos);
                 selectedPos = pos;
+                Message msg = new Message();
+                msg.what = VIB_MODE_CHANGE_MSG;
+                mHandler.sendMessage(msg);
             }
 
             @Override
@@ -257,7 +293,6 @@ public class MainActivity extends FragmentActivity implements ScannerFragment.On
                     msg.what = VIB_START_MSG;
                 }
                 mHandler.sendMessage(msg);
-                vibStarted = !vibStarted;
             }
         });
 

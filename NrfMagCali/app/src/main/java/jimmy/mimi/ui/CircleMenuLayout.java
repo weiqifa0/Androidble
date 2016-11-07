@@ -194,6 +194,11 @@ public class CircleMenuLayout extends ViewGroup
 	 */
 	private OnMenuItemClickListener mOnMenuItemClickListener;
 
+	public void setCenterImage(int imageID) {
+		ImageView iv = (ImageView)findViewById(R.id.id_center_image);
+		iv.setImageResource(imageID);
+	}
+
 	/**
 	 * 设置MenuItem的点击事件接口
 	 * 
@@ -486,6 +491,12 @@ public class CircleMenuLayout extends ViewGroup
 				iv.setVisibility(View.VISIBLE);
 				if(mItemImgs!=null) {
 					iv.setImageResource(mItemImgs[i]);
+				}
+
+				//make item[0] as default selected
+				if(i==0) {
+					iv.setImageResource(R.drawable.item_selected);
+					seletedView = iv;
 				}
 				iv.setOnClickListener(new OnClickListener()
 				{
